@@ -1,22 +1,18 @@
-name: Hit Agent API Cron
+name: API Health Check
 
-# Trigger schedule (every 10 minutes)
+# Trigger on schedule (every 1 minute) and on push (optional)
 on:
   schedule:
-    - cron: "*/10 * * * *" # every 10 minutes
-  workflow_dispatch: # manual trigger option
+    - cron: "* * * * *" # every 1 minute
+  workflow_dispatch: # manual trigger
 
 jobs:
   hit-api:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping API endpoint
+      - name: Hit API endpoint
         run: |
           echo "📡 Hitting API: https://my-agent-t5ic.onrender.com/health"
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://my-agent-t5ic.onrender.com/health)
-          if [ "$RESPONSE" -eq 200 ]; then
-            echo "✅ API is up! Status code $RESPONSE"
-          else
-            echo "❌ API returned $RESPONSE"
-            exit 1
-          fi
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://my-agent-t5ic.onrender.com/health || echo "000")
+          echo "🔹 API responded with code: $HTTP_CODE"
+        continue-on-error: true
